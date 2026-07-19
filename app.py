@@ -17,9 +17,9 @@ uploaded_files, response_style, custom_instructions = render_sidebar()
 
 # --- 2. Process Documents ---
 vectorstore = process_documents(uploaded_files)
-if vectorstore is None:
+if uploaded_files and vectorstore is None:
     st.error("Couldn't process your documents right now — you may have hit the free-tier rate limit. Wait about a minute and try again.")
-else:
+elif vectorstore is not None:
     st.session_state.vectorstore = vectorstore
     
 
