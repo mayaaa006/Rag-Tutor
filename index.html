@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NotePilot | Personalized RAG Tutor</title>
+
+    <!-- Google Fonts: Highly resilient, allows iframe null-origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=Manrope:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bgBase: "#181818",
+              textPrimary: "#EBDCC4",
+              textSecondary: "#B6A596",
+              accent: "#DC9F85",
+              borderCol: "#66473B",
+              darkDetail: "#35211A",
+            },
+            fontFamily: {
+              display: ['"Archivo"', "sans-serif"],
+              body: ['"Manrope"', "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      /* Fractal Noise Overlay */
+      .noise-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 50;
+        opacity: 0.03;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      }
+
+      /* Cinematic Text Layering */
+      .hero-text-container {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        letter-spacing: -0.05em;
+      }
+      .hero-layer-back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        -webkit-text-stroke: 1px #66473b;
+        color: transparent;
+        transform: translate(4px, 4px);
+        z-index: 1;
+      }
+      .hero-layer-front {
+        color: #ebdcc4;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* Rotating Badge */
+      @keyframes spin-slow {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .animate-spin-slow {
+        animation: spin-slow 12s linear infinite;
+      }
+    </style>
+  </head>
+
+  <body
+    class="bg-bgBase text-textPrimary font-body relative h-dvh w-screen overflow-hidden flex flex-col selection:bg-accent selection:text-bgBase"
+  >
+    <!-- Noise Layer -->
+    <div class="noise-overlay"></div>
+
+    <!-- Minimal Navigation -->
+    <nav
+      class="w-full px-6 py-6 flex items-center justify-between z-40 text-xs tracking-[0.2em] shrink-0"
+    >
+      <div class="text-textSecondary uppercase font-medium">NP—PROTOCOL 01</div>
+      <div class="h-px bg-darkDetail flex-grow mx-8 max-w-[200px]"></div>
+      <div class="text-darkDetail font-medium">INVITE ONLY</div>
+    </nav>
+
+    <!-- Unified Content Wrapper to control spacing -->
+    <div class="flex-grow flex flex-col justify-center pb-20">
+      <!-- Hero Section -->
+      <main class="px-6 mb-12">
+        <div class="max-w-7xl mx-auto w-full">
+          <!-- Early Access / AI Label -->
+          <div class="flex items-center justify-center gap-4 mb-5">
+            <div class="w-6 h-px bg-accent"></div>
+            <span
+              class="text-textSecondary uppercase tracking-[0.2em] text-sm font-medium"
+              >AI-Powered Tutor</span
+            >
+          </div>
+
+          <!-- Oversized Headline -->
+          <div
+            class="hero-text-container font-display font-black uppercase tracking-tighter leading-[0.85] text-[12vw] md:text-[8.5vw]"
+          >
+            <div class="hero-layer-back">NOTEPILOT</div>
+            <div class="hero-layer-front">NOTEPILOT</div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Bottom Content Grid -->
+      <section class="px-6 w-full max-w-7xl mx-auto relative z-40">
+        <div class="h-px bg-darkDetail w-full mb-8"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-6 items-end">
+          <!-- Columns 1-6: Exclusivity & Features -->
+          <div class="md:col-span-6 flex flex-col justify-between">
+            <div>
+              <p
+                class="text-lg font-light leading-relaxed text-textPrimary mb-5"
+              >
+                Upload documents simultaneously. Choose your persona, set your
+                parameters, and let our advanced AI chatbot help you extract key
+                concepts or generate precise exam notes. Converse directly with
+                your PDFs in a completely personalized environment. Zero cost.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+              <span class="text-textSecondary text-sm tracking-wide font-medium"
+                >Beta Active • Systems Online</span
+              >
+            </div>
+          </div>
+
+          <!-- Spacer -->
+          <div class="md:col-span-1 hidden md:block"></div>
+
+          <!-- Columns 8-12: OAuth Action -->
+          <div class="md:col-span-5 flex flex-col justify-end">
+            <div
+              class="border border-borderCol rounded-[4px] p-1 flex focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2 focus-within:ring-offset-bgBase transition-all"
+            >
+              <div
+                class="px-4 py-3 text-textSecondary flex-grow flex items-center font-medium bg-transparent rounded-l-[4px] text-sm md:text-base transition-colors"
+              >
+                G — Authenticate
+              </div>
+              <a
+                href="http://localhost:8501/?login=true"
+                target="_top"
+                class="bg-accent text-bgBase font-display font-bold uppercase px-6 py-3 rounded-r-[4px] hover:bg-[#EBDCC4] focus:outline-none transition-colors flex items-center justify-center whitespace-nowrap tracking-wide"
+              >
+                Init Login
+              </a>
+            </div>
+            <p
+              class="text-darkDetail text-xs mt-3 uppercase tracking-wider font-medium"
+            >
+              Zero spam. Pure utility.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Bottom Content Grid -->
+
+    <!-- Rotating Waitlist Badge -->
+    <div
+      class="absolute bottom-6 right-6 w-16 h-16 border border-darkDetail rounded-full z-40 items-center justify-center hidden xl:flex"
+    >
+      <svg
+        class="animate-spin-slow w-full h-full text-darkDetail"
+        viewBox="0 0 100 100"
+      >
+        <path
+          id="circlePath"
+          d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0"
+          fill="transparent"
+        />
+        <text
+          font-size="11"
+          font-weight="bold"
+          fill="currentColor"
+          text-transform="uppercase"
+          letter-spacing="2"
+        >
+          <textPath href="#circlePath" startOffset="0%">
+            Systems Online • NotePilot •
+          </textPath>
+        </text>
+      </svg>
+    </div>
+  </body>
+</html>
