@@ -1,108 +1,63 @@
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.document_loaders import Docx2txtLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain_groq import ChatGroq
-from langchain_community.vectorstores import FAISS
-from dotenv import load_dotenv
-load_dotenv()
 import streamlit as st
-import json
-import streamlit.components.v1 as components
+import time
+from dotenv import load_dotenv
 
-def copy_button(text):
-    safe_text = json.dumps(text)
-    components.html(f"""
-        <button style="background: none; border: none; padding: 0; cursor: pointer;"onclick='navigator.clipboard.writeText({safe_text})'>📋</button>
-    """, height=60)
+# Import our custom modules
+from ui import render_sidebar, copy_button
+from document_handler import process_documents
+from llm_handler import generate_answer
 
+# Load environment variables
+load_dotenv()
 
-st.title("RAG Tutor - Session State Test")
+st.title("NotePilot - AI powered personalized notes.⭐")
 
-# --- Sidebar: file upload ---
-uploaded_file = st.sidebar.file_uploader("Upload a PDF or DOCX", type=["pdf", "docx"])
+# --- 1. Render Sidebar & Get User Inputs ---
+uploaded_files, response_style, custom_instructions = render_sidebar()
 
-response_style = st.sidebar.selectbox(
-    "How should I answer?",
-    ["Concise answer", "Detailed notes", "Explain in simple language", "Expand with related context"]
-)
-custom_instructions = st.sidebar.text_input("Anything specific? (optional)")
-st.write(f"Style: {response_style}, Custom: {custom_instructions}")
+# --- 2. Process Documents ---
+vectorstore = process_documents(uploaded_files)
+if vectorstore is None:
+    st.error("Couldn't process your documents right now — you may have hit the free-tier rate limit. Wait about a minute and try again.")
+else:
+    st.session_state.vectorstore = vectorstore
+    
 
-# --- Init chat history (once) ---
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# --- 3. Safety Check for Active Chats ---
+# If all chats are deleted, prompt the user to make a new one to prevent crashing
+if not st.session_state.chats or st.session_state.active_chat not in st.session_state.chats:
+    st.warning("Please create a new chat from the sidebar.")
+    st.stop()
 
-# --- Process PDF (once per uploaded file) ---
-if uploaded_file is not None:
-    if "vectorstore" not in st.session_state:
-        if uploaded_file.name.endswith(".pdf"):
-            file_path = "uploaded.pdf"
-        elif uploaded_file.name.endswith(".docx"):
-            file_path = "uploaded.docx"
+# Get current messages array
+messages = st.session_state.chats[st.session_state.active_chat]
 
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getvalue())
-
-        if uploaded_file.name.endswith(".pdf"):
-            loader = PyPDFLoader(file_path)
-        else:
-            loader =  Docx2txtLoader(file_path)# which loader for docx?
-
-        pages = loader.load()
-
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        chunks = text_splitter.split_documents(pages)
-
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
-        vectorstore = FAISS.from_documents(chunks, embeddings)
-
-        st.session_state.vectorstore = vectorstore
-        st.write("PDF processed and ready!")
-
-# --- Show past conversation history ---
-for message in st.session_state.messages:
+# --- 4. Render Conversation History ---
+for message in messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
+        if message["role"] == "assistant":
+            copy_button(message["content"])
 
-# --- Chat input ---
+# --- 5. Handle New User Input ---
 user_question = st.chat_input("Ask something about your files...")
 
 if user_question:
-    st.session_state.messages.append({"role": "user", "content": user_question})
+    if not vectorstore:
+        st.warning("Please upload documents first before asking questions.")
+        st.stop()
+
+    # Append and show user question
+    messages.append({"role": "user", "content": user_question})
     with st.chat_message("user"):
         st.write(user_question)
 
+    # Generate and show assistant response
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            try:
-                relevant_chunks = st.session_state.vectorstore.similarity_search(user_question, k=4)
-                context = "\n\n".join(chunk.page_content for chunk in relevant_chunks)
-
-                model = ChatGroq(model="llama-3.3-70b-versatile")
-                prompt = f"""Answer the question using only the following context. If the answer isn't in the context, say you don't know.
-
-Response style: {response_style}
-Additional instructions: {custom_instructions if custom_instructions else "None"}
-
-Context: {context}
-
-Question: {user_question}
-"""
-
-                result = model.invoke(prompt)
-                if isinstance(result.content, str):
-                    answer = result.content
-                else:
-                    answer = "".join(block["text"] for block in result.content if block.get("type") == "text")
-            except Exception as e:
-                answer = None
-                st.error("Something went wrong while generating the answer. Please try again.")
-
+            answer = generate_answer(user_question, vectorstore, response_style, custom_instructions)
+            
         if answer:
             st.write(answer)
-            st.session_state.messages.append({"role": "assistant", "content": answer})
+            messages.append({"role": "assistant", "content": answer})
             copy_button(answer)
-            
-
-
