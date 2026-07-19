@@ -61,7 +61,7 @@ rag-tutor/
 ### 1. Clone and create a virtual environment
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/mayaaa006/Rag-Tutor.git
 cd rag-tutor
 python -m venv venv
 source venv/Scripts/activate   # Windows Git Bash
