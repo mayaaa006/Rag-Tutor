@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-import streamlit.components.v1 as components
+from storage import save_chats
 
 def inject_custom_css():
     st.markdown("""
@@ -19,17 +19,37 @@ def inject_custom_css():
             background-color: rgba(255,255,255,0.08);
             cursor: pointer;
         }
+        /* --- Primary Button Override (Log Out) --- */
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="primary"] {
+            background-color: #DC9F85 !important;
+            color: #181818 !important;
+            border: 1px solid #66473B !important;
+            border-radius: 4px !important;
+            font-weight: 1000 !important;
+            text-align: center !important; /* Overrides the left-alignment from your base CSS */
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="primary"]:hover {
+            background-color: #EBDCC4 !important;
+            border-color: #EBDCC4 !important;
+            cursor: pointer !important;
+        }
     </style>
     """, unsafe_allow_html=True)
 
 def copy_button(text):
     safe_text = json.dumps(text)
-    components.html(f"""
-        <button style="background: none; border: none; padding: 0; cursor: pointer;"onclick='navigator.clipboard.writeText({safe_text})'>📋</button>
-    """, height=60)
+    # Replaced components.html with st.html and removed the height keyword argument
+    st.html(f"""
+        <div style="height: 60px;">
+            <button style="background: none; border: none; padding: 0; cursor: pointer;" onclick='navigator.clipboard.writeText({safe_text})'>📋</button>
+        </div>
+    """)
 
-def render_sidebar():
+def render_sidebar(user_email):
     inject_custom_css()
+    
     
     # --- File Upload ---
     uploaded_files = st.sidebar.file_uploader(
@@ -64,6 +84,7 @@ def render_sidebar():
         new_chat_name = f"Chat {len(st.session_state.chats) + 1}"
         st.session_state.chats[new_chat_name] = []
         st.session_state.active_chat = new_chat_name
+        save_chats(user_email, st.session_state.chats)
 
     st.sidebar.write("Your chats")
     
@@ -83,11 +104,14 @@ def render_sidebar():
                         st.session_state.chats[new_name] = st.session_state.chats.pop(name)
                         if st.session_state.active_chat == name:
                             st.session_state.active_chat = new_name
+                        save_chats(user_email, st.session_state.chats)
                         st.rerun()
                 if st.button("Delete", key=f"delete_{name}"):
                     del st.session_state.chats[name]
                     if st.session_state.active_chat == name:
                         st.session_state.active_chat = list(st.session_state.chats.keys())[0] if st.session_state.chats else None
+                    save_chats(user_email, st.session_state.chats)
+                    save_chats(user_email, st.session_state.chats)
                     st.rerun()
 
     if st.sidebar.button("Clear chat"):

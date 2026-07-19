@@ -5,3 +5,5 @@ __pycache__/
 uploaded.pdf
 uploaded.docx
 files/
+.streamlit/secrets.toml
+user_data/
