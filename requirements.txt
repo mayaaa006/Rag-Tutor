@@ -5,6 +5,7 @@ altair==6.2.2
 annotated-types==0.7.0
 anyio==4.14.2
 attrs==26.1.0
+Authlib==1.7.2
 blinker==1.9.0
 cachetools==7.1.4
 certifi==2026.6.17
@@ -36,6 +37,7 @@ huggingface_hub==1.24.0
 idna==3.18
 itsdangerous==2.2.0
 Jinja2==3.1.6
+joserfc==1.7.3
 jsonpatch==1.33
 jsonpointer==3.1.1
 jsonschema==4.26.0

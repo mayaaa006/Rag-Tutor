@@ -3,7 +3,7 @@ import streamlit as st
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.document_loaders import Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_community.vectorstores import FAISS
 import time
 
@@ -45,7 +45,9 @@ def process_documents(uploaded_files):
             all_chunks.extend(chunks)
 
         try:
-            embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
+            embeddings = HuggingFaceEndpointEmbeddings(
+    model="sentence-transformers/all-MiniLM-L6-v2"
+)
             vectorstore = FAISS.from_documents(all_chunks, embeddings)
             st.session_state.vectorstore = vectorstore
             st.session_state.processed_files = current_names
@@ -53,6 +55,7 @@ def process_documents(uploaded_files):
             return vectorstore
         except Exception as e:
             st.session_state.last_processed_time = time.time()
+            st.error(f"Debug — actual error: {e}")
             return None
 
     return st.session_state.vectorstore
